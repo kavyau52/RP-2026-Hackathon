@@ -65,3 +65,16 @@ export interface JobMatch {
   /** One concrete next step, in the heritage language. */
   nextStepHeritage: string;
 }
+
+export interface ResourceTip {
+  /** Short tip title in the mainstream language. */
+  title: string;
+  /** Practical advice in the heritage language (2–3 sentences). */
+  heritageAdvice: string;
+  /** Same advice in the mainstream language. */
+  mainstreamAdvice: string;
+  /** A key phrase the person may need to say, in the heritage language. */
+  phrase: string;
+  /** Romanized phonetic spelling of that phrase. */
+  phonetic: string;
+}

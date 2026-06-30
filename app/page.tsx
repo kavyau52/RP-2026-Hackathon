@@ -129,6 +129,17 @@ export default function Home() {
             </p>
             <span className="who">For children &amp; grandchildren →</span>
           </button>
+
+          <Link href="/resources" className="mode-card mode-card--resources">
+            <div className="mode-icon">📍</div>
+            <h3>Resources</h3>
+            <p>
+              Find doctors, pharmacies, transit, food banks, and more near you.
+              Get advice on how to use each service — explained in your own
+              language, with key phrases to help you speak up.
+            </p>
+            <span className="who" style={{ color: "var(--gold)" }}>Find help nearby →</span>
+          </Link>
         </div>
         {!langs && (
           <p className="hint" style={{ marginTop: 12 }}>
