@@ -40,7 +40,7 @@ export default function Home() {
         <span className="eyebrow">RP 2026 Hackathon</span>
         <h1>Keep your language alive — and let it carry you forward.</h1>
         <p className="lead">
-          Mother Tongue helps people who speak an endangered language thrive in
+          Ori helps people who speak an endangered language thrive in
           the modern world, and helps their children and grandchildren
           reconnect with the language of their roots. Voice-first, built for
           everyone — even if you can’t read.
@@ -96,7 +96,7 @@ export default function Home() {
       </section>
 
       <section>
-        <h2 className="section">2 · Choose how Mother Tongue helps you</h2>
+        <h2 className="section">2 · Choose how Ori helps you</h2>
         <div className="mode-grid">
           <button
             type="button"
