@@ -1,7 +1,7 @@
 {
-  "name": "mother-tongue",
+  "name": "ori",
   "version": "1.0.0",
-  "description": "Mother Tongue — an AI app that helps speakers of endangered languages navigate the modern world (Bridge), and helps their descendants keep the language alive (Roots).",
+  "description": "Ori — an AI app that helps speakers of endangered languages navigate the modern world (Bridge), and helps their descendants keep the language alive (Roots).",
   "private": true,
   "scripts": {
     "dev": "next dev",

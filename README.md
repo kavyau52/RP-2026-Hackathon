@@ -1,4 +1,4 @@
-# 🪶 Mother Tongue
+# 🪶 Ori
 
 **Keep your language alive — and let it carry you forward.**
 

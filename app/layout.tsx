@@ -3,7 +3,7 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Mother Tongue",
+  title: "Ori",
   description:
     "Keep your language alive — and let it carry you forward. An AI app for endangered-language speakers and their descendants.",
 };
@@ -19,7 +19,7 @@ export default function RootLayout({
         <header className="topbar">
           <Link href="/" className="brand">
             <span className="brand-mark">🪶</span>
-            <span className="brand-name">Mother Tongue</span>
+            <span className="brand-name">Ori</span>
           </Link>
         </header>
         <main className="container">{children}</main>
