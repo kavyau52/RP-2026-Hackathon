@@ -37,7 +37,7 @@ export default function SetupGuard({
           First, choose your language
         </h2>
         <p className="muted">
-          Mother Tongue personalizes everything to your heritage language and
+          Ori personalizes everything to your heritage language and
           the city language you need.
         </p>
         <div>
