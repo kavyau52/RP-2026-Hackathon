@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
   HERITAGE_LANGUAGES,
@@ -12,6 +13,7 @@ export default function Home() {
   const { langs, ready, save } = useLangs();
   const [heritage, setHeritage] = useState("");
   const [mainstream, setMainstream] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     if (langs) {
@@ -24,6 +26,12 @@ export default function Home() {
 
   const onSave = () => {
     if (ledger) save({ heritage, mainstream });
+  };
+
+  const goTo = (path: string) => {
+  if (!heritage || !mainstream) return;
+  save({ heritage, mainstream });
+  router.push(path);
   };
 
   return (
@@ -90,7 +98,12 @@ export default function Home() {
       <section>
         <h2 className="section">2 · Choose how Mother Tongue helps you</h2>
         <div className="mode-grid">
-          <Link href="/speaker" className="mode-card mode-card--bridge">
+          <button
+            type="button"
+            className="mode-card mode-card--bridge"
+            onClick={() => goTo("/speaker")}
+            disabled={!heritage || !mainstream}
+          >
             <div className="mode-icon">🌉</div>
             <h3>Bridge</h3>
             <p>
@@ -99,9 +112,14 @@ export default function Home() {
               learn survival phrases, and find a job.
             </p>
             <span className="who">For speakers of the language →</span>
-          </Link>
+          </button>
 
-          <Link href="/heritage" className="mode-card mode-card--roots">
+        <button
+          type="button"
+          className="mode-card mode-card--roots"
+          onClick={() => goTo("/heritage")}
+          disabled={!heritage || !mainstream}
+        >
             <div className="mode-icon">🌱</div>
             <h3>Roots</h3>
             <p>
@@ -110,7 +128,7 @@ export default function Home() {
               fun quizzes and a daily streak.
             </p>
             <span className="who">For children &amp; grandchildren →</span>
-          </Link>
+          </button>
         </div>
         {!langs && (
           <p className="hint" style={{ marginTop: 12 }}>

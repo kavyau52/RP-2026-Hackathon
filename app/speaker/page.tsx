@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import SetupGuard from "@/components/SetupGuard";
 import MicButton from "@/components/MicButton";
 import SpeakButton from "@/components/SpeakButton";
@@ -236,25 +236,73 @@ function Phrasebook({
   const [phrases, setPhrases] = useState<Phrase[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const requestId = useRef(0);
+
+  const [customText, setCustomText] = useState("");
+  const [customResult, setCustomResult] = useState<TranslateResult | null>(null);
+  const [customLoading, setCustomLoading] = useState(false);
+  const [customError, setCustomError] = useState<string | null>(null);
+
+  const translateCustomPhrase = async (value: string) => {
+    if (!value.trim()) return;
+
+    setCustomLoading(true);
+    setCustomError(null);
+    setCustomResult(null);
+
+    try {
+      const res = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: value,
+          from: mainstream,
+          to: heritage,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "Could not translate phrase.");
+
+      setCustomResult(data);
+    } catch (e) {
+      setCustomError(e instanceof Error ? e.message : "Something went wrong.");
+    } finally {
+      setCustomLoading(false);
+    }
+  };
 
   const loadTopic = async (topicId: string, situation: string) => {
+    const id = ++requestId.current;
+
     setActiveTopic(topicId);
     setLoading(true);
     setError(null);
     setPhrases([]);
+
     try {
       const res = await fetch("/api/phrases", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ situation, mainstream, heritage }),
       });
+
       const data = await res.json();
+
+      if (id !== requestId.current) return;
+
       if (!res.ok) throw new Error(data.error || "Could not load phrases.");
+
       setPhrases(data.phrases || []);
     } catch (e) {
+      if (id !== requestId.current) return;
+
       setError(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
-      setLoading(false);
+      if (id === requestId.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -267,6 +315,7 @@ function Phrasebook({
             key={t.id}
             className={`tile ${activeTopic === t.id ? "active" : ""}`}
             onClick={() => loadTopic(t.id, t.situation)}
+            disabled={loading}
           >
             <span className="tile-icon">{t.icon}</span>
             {t.label}
@@ -282,31 +331,94 @@ function Phrasebook({
       {error && <p className="error-text">{error}</p>}
 
       {phrases.length > 0 && (
-        <div className="card" style={{ marginTop: 18 }}>
-          {phrases.map((p, i) => (
-            <div className="phrase" key={i}>
-              <SpeakButton
-                text={p.heritage}
-                lang={heritageLang?.bcp47 ?? null}
-                label="Hear it in your language"
+        <>
+          <div className="card" style={{ marginTop: 18 }}>
+            <h2 className="section" style={{ marginTop: 0 }}>
+              Ask for your own phrase
+            </h2>
+
+            <p className="hint">
+              Type or speak a specific thing you need to say. We’ll translate it into{" "}
+              {heritage}.
+            </p>
+
+            <div style={{ margin: "18px 0", textAlign: "center" }}>
+              <MicButton
+                lang={mainstreamLang?.bcp47 ?? null}
+                onResult={(t) => {
+                  setCustomText(t);
+                  translateCustomPhrase(t);
+                }}
               />
-              <div className="body">
-                <div className="situation">{p.situation}</div>
-                <div className="heritage-text">{p.heritage}</div>
-                <div className="phonetic">🔤 {p.phonetic}</div>
-                <div className="mainstream-text">
-                  {p.mainstream}{" "}
+            </div>
+
+            <textarea
+              value={customText}
+              onChange={(e) => setCustomText(e.target.value)}
+              placeholder={`Type a phrase in ${mainstream}`}
+            />
+
+            <div style={{ marginTop: 12 }}>
+              <button
+                className="btn btn--bridge"
+                onClick={() => translateCustomPhrase(customText)}
+                disabled={customLoading || !customText.trim()}
+              >
+                {customLoading ? <span className="spinner" /> : "Translate this phrase"}
+              </button>
+            </div>
+
+            {customError && (
+              <p className="error-text" style={{ marginTop: 12 }}>
+                {customError}
+              </p>
+            )}
+
+            {customResult && (
+              <div className="translate-out">
+                <div className="big">
+                  <span>{customResult.translation}</span>
                   <SpeakButton
-                    text={p.mainstream}
-                    lang={mainstreamLang?.bcp47 ?? null}
-                    size="sm"
-                    label={`Hear it in ${mainstream}`}
+                    text={customResult.translation}
+                    lang={heritageLang?.bcp47 ?? null}
                   />
                 </div>
+
+                {customResult.phonetic && (
+                  <div className="phonetic">🔤 {customResult.phonetic}</div>
+                )}
+
+                {customResult.note && <div className="note">💡 {customResult.note}</div>}
               </div>
-            </div>
-          ))}
-        </div>
+            )}
+          </div>
+
+          <div className="card" style={{ marginTop: 18 }}>
+            {phrases.map((p, i) => (
+              <div className="phrase" key={i}>
+                <SpeakButton
+                  text={p.heritage}
+                  lang={heritageLang?.bcp47 ?? null}
+                  label="Hear it in your language"
+                />
+                <div className="body">
+                  <div className="situation">{p.situation}</div>
+                  <div className="heritage-text">{p.heritage}</div>
+                  <div className="phonetic">🔤 {p.phonetic}</div>
+                  <div className="mainstream-text">
+                    {p.mainstream}{" "}
+                    <SpeakButton
+                      text={p.mainstream}
+                      lang={mainstreamLang?.bcp47 ?? null}
+                      size="sm"
+                      label={`Hear it in ${mainstream}`}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

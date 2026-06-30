@@ -130,6 +130,13 @@ h2.section {
   padding: 22px;
 }
 
+.mode-card {
+  text-align: left;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
 .mode-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -639,4 +646,157 @@ input:focus {
 .loading-block .spinner {
   border-color: rgba(0, 0, 0, 0.15);
   border-top-color: var(--brand);
+}
+
+
+/* ---------- recipe game ---------- */
+.recipe-game {
+  margin-top: 18px;
+  padding: 20px;
+  border-radius: var(--radius);
+  border: 1.5px solid #ddd0f7;
+  background: linear-gradient(160deg, var(--roots-soft), #fff);
+}
+.cook-play-area {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: 18px;
+  align-items: center;
+  margin-top: 16px;
+}
+.cook-pot-large {
+  position: relative;
+  min-height: 170px;
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  padding: 18px;
+  border-radius: 22px;
+  border: 2px solid #ddd0f7;
+  background: radial-gradient(circle at top, #fff 0, #fbf7ff 54%, #eee3ff 100%);
+  overflow: hidden;
+  text-align: center;
+}
+.cook-pot-large.complete {
+  border-color: var(--ok);
+  background: radial-gradient(circle at top, #fff 0, #e9f8ee 58%, #c8efd5 100%);
+}
+.pot-emoji {
+  position: relative;
+  z-index: 1;
+  font-size: 58px;
+}
+.pot-contents {
+  position: relative;
+  z-index: 1;
+  min-height: 22px;
+  color: var(--ink-soft);
+  font-size: 14px;
+  font-weight: 800;
+}
+.smoke-cloud {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 35% 45%, rgba(0, 0, 0, 0.68), transparent 28%),
+    radial-gradient(circle at 60% 36%, rgba(0, 0, 0, 0.58), transparent 30%),
+    radial-gradient(circle at 48% 62%, rgba(0, 0, 0, 0.5), transparent 32%);
+  opacity: 0;
+  transform: scale(0.75);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+.cook-pot-large.smoky .smoke-cloud {
+  opacity: 1;
+  transform: scale(1.1);
+}
+.cook-status {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 17px;
+}
+.cook-status span {
+  color: var(--ink-soft);
+  font-size: 14px;
+  font-weight: 700;
+}
+.ingredient-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 18px;
+}
+.ingredient-card {
+  min-height: 150px;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 7px;
+  padding: 14px 10px;
+  border-radius: 14px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  text-align: center;
+  transition: transform 0.1s ease, border-color 0.1s ease, opacity 0.1s ease;
+}
+.ingredient-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--roots);
+}
+.ingredient-card.used {
+  opacity: 0.45;
+  cursor: default;
+}
+.ingredient-card.used:hover {
+  transform: none;
+}
+.ingredient-art {
+  font-size: 38px;
+  line-height: 1;
+}
+.ingredient-heritage {
+  font-weight: 900;
+  font-size: 16px;
+}
+.ingredient-meaning {
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 700;
+}
+.cook-pot {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: #fff;
+  border: 1.5px solid var(--line);
+  font-size: 30px;
+}
+.cook-complete {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1.5px solid var(--ok);
+  font-weight: 800;
+}
+@media (max-width: 820px) {
+  .ingredient-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 680px) {
+  .cook-play-area {
+    grid-template-columns: 1fr;
+  }
+  .ingredient-grid {
+    grid-template-columns: 1fr;
+  }
 }
