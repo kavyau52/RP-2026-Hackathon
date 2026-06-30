@@ -13,6 +13,9 @@
 .env.local
 .env*.local
 
+# uploaded documents (local only)
+/data/
+
 # misc
 .DS_Store
 *.pem
