@@ -86,6 +86,7 @@ function Roots({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           kind: category.kind,
+          categoryId: category.id,
           heritage,
           mainstream,
           seed,
@@ -173,10 +174,13 @@ function Roots({
       {content && (
         <Lesson
           content={content}
+          heritage={heritage}
           heritageLang={heritageLang}
           mainstreamLang={mainstreamLang}
           mainstream={mainstream}
+          showRecipeGame={category.id === "recipe"}
           onQuizComplete={(correct) => addPoints(correct * 10, true)}
+          onGameComplete={(correct) => addPoints(correct * 15, false)}
         />
       )}
     </div>
@@ -186,16 +190,22 @@ function Roots({
 /* -------------------------------- Lesson --------------------------------- */
 function Lesson({
   content,
+  heritage,
   heritageLang,
   mainstreamLang,
   mainstream,
+  showRecipeGame,
   onQuizComplete,
+  onGameComplete,
 }: {
   content: HeritageContent;
+  heritage: string;
   heritageLang?: Language;
   mainstreamLang?: Language;
   mainstream: string;
+  showRecipeGame: boolean;
   onQuizComplete: (correct: number) => void;
+  onGameComplete: (correct: number) => void;
 }) {
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -265,6 +275,17 @@ function Lesson({
         </>
       )}
 
+      {showRecipeGame && (content.recipeGame || content.vocab?.length > 0) && (
+        <RecipeGame
+          recipeGame={content.recipeGame}
+          vocab={content.vocab}
+          heritage={heritage}
+          heritageLang={heritageLang}
+          mainstream={mainstream}
+          onComplete={onGameComplete}
+        />
+      )}
+
       {content.quiz?.length > 0 && (
         <>
           <h2 className="section">Quick quiz 🎯</h2>
@@ -312,4 +333,183 @@ function Lesson({
       )}
     </div>
   );
+}
+
+
+/* ------------------------------ Recipe Game ------------------------------ */
+function RecipeGame({
+  recipeGame,
+  vocab,
+  heritage,
+  heritageLang,
+  mainstream,
+  onComplete,
+}: {
+  recipeGame?: HeritageContent["recipeGame"];
+  vocab: HeritageContent["vocab"];
+  heritage: string;
+  heritageLang?: Language;
+  mainstream: string;
+  onComplete: (correct: number) => void;
+}) {
+  const required = getRequiredIngredients(recipeGame, vocab);
+  const cards = getCookingCards(recipeGame, vocab);
+  const [added, setAdded] = useState<string[]>([]);
+  const [mistakes, setMistakes] = useState(0);
+  const [message, setMessage] = useState("Choose the ingredients grandma asked for.");
+  const [smoky, setSmoky] = useState(false);
+  const [completed, setCompleted] = useState(false);
+
+  const requiredMeanings = required.map((item) => item.meaning);
+  const dish = recipeGame?.dish || "Family stew";
+  const completeEmoji = recipeGame?.completeEmoji || "🍲";
+  const isComplete = required.length > 0 && added.length === required.length;
+
+  const addIngredient = (meaning: string) => {
+    if (completed || added.includes(meaning)) return;
+
+    const card = cards.find((item) => item.meaning === meaning);
+    if (!card) return;
+
+    if (!requiredMeanings.includes(meaning)) {
+      setMistakes((n) => n + 1);
+      setSmoky(true);
+      setMessage(`${card.meaning} makes black smoke. Try another ingredient.`);
+      window.setTimeout(() => setSmoky(false), 900);
+      return;
+    }
+
+    const nextAdded = [...added, meaning];
+    setAdded(nextAdded);
+    setSmoky(false);
+    setMessage(`${card.meaning} went into the pot.`);
+
+    if (nextAdded.length === required.length) {
+      setCompleted(true);
+      setMessage(`${dish} is ready.`);
+      onComplete(Math.max(required.length - mistakes, 1));
+    }
+  };
+
+  if (required.length === 0 || cards.length === 0) return null;
+
+  return (
+    <div className="recipe-game">
+      <h2 className="section" style={{ marginTop: 0 }}>
+        Cook with grandma
+      </h2>
+      <p className="hint">
+        Add the right ingredients to make {dish}. The cards use {heritage}, with
+        {" "}{mainstream} underneath.
+      </p>
+
+      <div className="cook-play-area">
+        <div className={`cook-pot-large ${smoky ? "smoky" : ""} ${isComplete ? "complete" : ""}`}>
+          <div className="smoke-cloud" aria-hidden="true" />
+          <div className="pot-emoji" aria-hidden="true">
+            {isComplete ? completeEmoji : "🍲"}
+          </div>
+          <div className="pot-contents">
+            {added.length === 0
+              ? "Empty pot"
+              : added.map((meaning) => cards.find((card) => card.meaning === meaning)?.emoji).join(" ")}
+          </div>
+        </div>
+
+        <div className="cook-status">
+          <strong>{message}</strong>
+          <span>
+            {added.length} / {required.length} ingredients added
+          </span>
+        </div>
+      </div>
+
+      <div className="ingredient-grid">
+        {cards.map((card) => {
+          const used = added.includes(card.meaning);
+          return (
+            <div
+              key={`${card.heritage}-${card.meaning}`}
+              role="button"
+              tabIndex={used || completed ? -1 : 0}
+              aria-disabled={used || completed}
+              className={`ingredient-card ${used ? "used" : ""}`}
+              onClick={() => addIngredient(card.meaning)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  addIngredient(card.meaning);
+                }
+              }}
+            >
+              <span className="ingredient-art" aria-hidden="true">
+                {card.emoji}
+              </span>
+              <span className="ingredient-heritage">{card.heritage}</span>
+              <SpeakButton
+                text={card.heritage}
+                lang={heritageLang?.bcp47 ?? null}
+                size="sm"
+                label="Hear ingredient"
+              />
+              <span className="ingredient-meaning">{card.meaning}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      {completed && (
+        <div className="cook-complete">
+          <div className="cook-pot" aria-hidden="true">
+            {completeEmoji}
+          </div>
+          <strong>{dish} complete!</strong>
+          <span>+{Math.max(required.length - mistakes, 1) * 15} points</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function getRequiredIngredients(
+  recipeGame: HeritageContent["recipeGame"] | undefined,
+  vocab: HeritageContent["vocab"]
+) {
+  if (recipeGame?.ingredients?.length) return recipeGame.ingredients.slice(0, 4);
+  return vocab.slice(0, 4).map((item) => ({
+    ...item,
+    emoji: emojiForIngredient(item.meaning),
+  }));
+}
+
+function getCookingCards(
+  recipeGame: HeritageContent["recipeGame"] | undefined,
+  vocab: HeritageContent["vocab"]
+) {
+  const required = getRequiredIngredients(recipeGame, vocab);
+  const decoys = recipeGame?.decoys?.length
+    ? recipeGame.decoys.slice(0, 3)
+    : [
+        { heritage: "salt", meaning: "salt", emoji: "🧂" },
+        { heritage: "apple", meaning: "apple", emoji: "🍎" },
+        { heritage: "fish", meaning: "fish", emoji: "🐟" },
+      ];
+
+  return [...required, ...decoys]
+    .filter((item, index, all) => all.findIndex((other) => other.meaning === item.meaning) === index)
+    .sort((a, b) => a.meaning.localeCompare(b.meaning));
+}
+
+function emojiForIngredient(meaning: string) {
+  const lower = meaning.toLowerCase();
+  if (lower.includes("potato")) return "🥔";
+  if (lower.includes("carrot")) return "🥕";
+  if (lower.includes("onion")) return "🧅";
+  if (lower.includes("meat") || lower.includes("beef") || lower.includes("lamb")) return "🥩";
+  if (lower.includes("corn")) return "🌽";
+  if (lower.includes("bean")) return "🫘";
+  if (lower.includes("tomato")) return "🍅";
+  if (lower.includes("rice")) return "🍚";
+  if (lower.includes("water")) return "💧";
+  return "🥣";
 }

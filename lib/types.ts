@@ -32,6 +32,19 @@ export interface VocabItem {
   meaning: string;
 }
 
+export interface RecipeIngredient {
+  heritage: string;
+  meaning: string;
+  emoji: string;
+}
+
+export interface RecipeGameData {
+  dish: string;
+  completeEmoji: string;
+  ingredients: RecipeIngredient[];
+  decoys: RecipeIngredient[];
+}
+
 export interface HeritageContent {
   title: string;
   /** The main content in the heritage language. */
@@ -40,6 +53,7 @@ export interface HeritageContent {
   translation: string;
   vocab: VocabItem[];
   quiz: QuizQuestion[];
+  recipeGame?: RecipeGameData;
 }
 
 export interface JobMatch {
