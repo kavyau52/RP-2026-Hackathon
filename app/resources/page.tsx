@@ -1,13 +1,22 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useCallback, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import SetupGuard from "@/components/SetupGuard";
 import SpeakButton from "@/components/SpeakButton";
-import ResourcesLeafletMap from "./ResourcesLeafletMap";
 import type { Language } from "@/lib/languages";
 import type { ResourceTip } from "@/lib/types";
+
+const ResourcesLeafletMap = dynamic(() => import("./ResourcesLeafletMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="resource-map resource-map--loading">
+      <span className="spinner" style={{ borderTopColor: "var(--brand)" }} />
+    </div>
+  ),
+});
 
 const CATEGORIES = [
   {
